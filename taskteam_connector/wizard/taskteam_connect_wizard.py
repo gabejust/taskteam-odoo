@@ -20,8 +20,8 @@ TASKTEAM_GROUP_NAME = 'TaskTeam API'
 # Odoo caps the lifetime of API keys of non-admin users with the highest
 # ``api_key_duration`` among their groups.
 KEY_DURATION_DAYS = 365
-# Odoo 19 accepts keys with scope NULL or 'rpc' for the external API;
-# Odoo 20 requires a scope and uses 'rpc'. 'rpc' works on both.
+# Odoo 17 to 19 accept keys with scope NULL or 'rpc' for the external API;
+# Odoo 20 requires a scope and uses 'rpc'. 'rpc' works on all of them.
 KEY_SCOPE = 'rpc'
 
 
@@ -113,7 +113,7 @@ class TaskteamConnectWizard(models.TransientModel):
                 'active': True,
                 'company_ids': [Command.set(companies.ids)],
                 'company_id': main_company.id,
-                'group_ids': [Command.link(g.id) for g in required_groups],
+                'groups_id': [Command.link(g.id) for g in required_groups],
             })
             return user
         return self.env['res.users'].sudo().with_context(no_reset_password=True).create({
@@ -122,7 +122,7 @@ class TaskteamConnectWizard(models.TransientModel):
             'company_ids': [Command.set(companies.ids)],
             'company_id': main_company.id,
             # Set explicitly so the default groups of new users are not added.
-            'group_ids': [Command.set(required_groups.ids)],
+            'groups_id': [Command.set(required_groups.ids)],
         })
 
     @api.model

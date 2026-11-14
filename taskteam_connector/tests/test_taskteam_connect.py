@@ -84,7 +84,7 @@ class TestTaskteamConnect(TransactionCase):
         self.assertTrue(user._is_internal())
         self.assertTrue(user.has_group('base.group_user'))
         self.assertTrue(user.has_group('hr.group_hr_user'))
-        self.assertIn(self._taskteam_groups(), user.group_ids)
+        self.assertIn(self._taskteam_groups(), user.groups_id)
         self.assertFalse(user.has_group('base.group_system'))
         self.assertFalse(user.has_group('base.group_erp_manager'))
         self.assertFalse(user.has_group('hr.group_hr_manager'))
@@ -186,7 +186,7 @@ class TestTaskteamConnect(TransactionCase):
     def test_only_admins(self):
         officer = self.env['res.users'].create({
             'name': 'HR Officer', 'login': 'hr_officer_tt',
-            'group_ids': [(6, 0, [self.env.ref('hr.group_hr_user').id])],
+            'groups_id': [(6, 0, [self.env.ref('hr.group_hr_user').id])],
         })
         with self.assertRaises(AccessError):
             self.env(user=officer)['taskteam.connect.wizard'].create({'consent': True})

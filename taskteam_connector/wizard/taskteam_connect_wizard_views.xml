@@ -101,7 +101,7 @@
         <field name="res_model">taskteam.connect.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="group_ids" eval="[Command.link(ref('base.group_system'))]"/>
+        <field name="groups_id" eval="[Command.link(ref('base.group_system'))]"/>
     </record>
 
     <menuitem id="menu_taskteam_connect"

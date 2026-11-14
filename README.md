@@ -13,6 +13,8 @@ One branch per Odoo version, as required by the Odoo Apps store:
 
 | Branch | Module version |
 |--------|----------------|
+| `17.0` | `17.0.1.0.0`   |
+| `18.0` | `18.0.1.0.0`   |
 | `19.0` | `19.0.1.0.0`   |
 | `20.0` | `20.0.1.0.0`   |
 
@@ -69,13 +71,13 @@ taskteam_connector/
 docker network create tt-odoo
 docker run -d --name tt-odoo-db --network tt-odoo \
   -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres postgres:16
-docker run --rm --network tt-odoo -v "$PWD":/mnt/extra-addons odoo:19.0 \
+docker run --rm --network tt-odoo -v "$PWD":/mnt/extra-addons odoo:18.0 \
   odoo --db_host=tt-odoo-db --db_user=odoo --db_password=odoo -d tt_test \
   -i taskteam_connector --test-enable --stop-after-init --without-demo=all
 docker rm -f tt-odoo-db && docker network rm tt-odoo
 ```
 
-Use `odoo:20.0` on the `20.0` branch.
+Use the image that matches the branch (`odoo:18.0` on this branch).
 
 ## License
 
