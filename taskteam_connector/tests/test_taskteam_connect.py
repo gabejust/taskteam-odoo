@@ -100,8 +100,13 @@ class TestTaskteamConnect(TransactionCase):
              'identification_id'])
         self.assertEqual(read[0]['identification_id'], 'X123')
         self.assertTrue(user_env['res.company'].search([]))
-        user_env['res.partner'].search_read(
-            [('customer_rank', '>', 0)], ['name', 'customer_rank', 'supplier_rank'])
+        partners = user_env['res.partner']
+        if 'customer_rank' in partners._fields:
+            # customer_rank / supplier_rank come with Invoicing (account).
+            partners.search_read(
+                [('customer_rank', '>', 0)], ['name', 'customer_rank', 'supplier_rank'])
+        else:
+            partners.search_read([('is_company', '=', True)], ['name', 'email', 'phone'])
 
     def test_key_valid_365_days_and_shown_once(self):
         action, key = self._connect()
@@ -136,7 +141,7 @@ class TestTaskteamConnect(TransactionCase):
         _action, key1 = self._connect()
         wizard = self._wizard()
         self.assertTrue(wizard.connected)
-        _action, key2 = wizard._connect()
+        key2 = wizard._connect()['context']['default_key']
         self.assertNotEqual(key1, key2)
         user = self._taskteam_users()
         self.assertEqual(len(user), 1)
