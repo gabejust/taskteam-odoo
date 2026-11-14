@@ -9,10 +9,9 @@
             <form string="Connect TaskTeam">
                 <field name="connected" invisible="1"/>
                 <div class="alert alert-success" role="status" invisible="not connected">
-                    TaskTeam is connected through the user
-                    <strong><field name="taskteam_user_id" readonly="1" class="d-inline"/></strong>.
-                    You can create a new key (existing keys keep working until you
-                    revoke them) or disconnect TaskTeam.
+                    TaskTeam is connected through the user <strong>TaskTeam</strong>
+                    (login <code>taskteam</code>). You can create a new key (existing keys
+                    keep working until you revoke them) or disconnect TaskTeam.
                 </div>
                 <p>
                     <strong>TaskTeam is an external service</strong> (a task and chat app for
@@ -39,9 +38,12 @@
                     <field name="company_ids" widget="many2many_tags"
                            options="{'no_create': True}" groups="base.group_multi_company"/>
                     <field name="odoo_url" readonly="1"/>
-                    <field name="consent"
-                           string="I understand that TaskTeam is an external service and I allow it to read the data listed above"/>
                 </group>
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <field name="consent" nolabel="1"/>
+                    <label for="consent" class="fw-bold"
+                           string="I understand that TaskTeam is an external service and I allow it to read the data listed above"/>
+                </div>
                 <div invisible="not api_key_ids">
                     <h5>Keys of the TaskTeam user</h5>
                     <field name="api_key_ids" readonly="1" nolabel="1">
