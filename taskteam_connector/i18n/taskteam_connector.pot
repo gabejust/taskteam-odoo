@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0-20261112\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 17:16+0000\n"
-"PO-Revision-Date: 2026-11-14 17:16+0000\n"
+"POT-Creation-Date: 2026-11-14 18:47+0000\n"
+"PO-Revision-Date: 2026-11-14 18:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -37,6 +37,15 @@ msgstr ""
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
+"<strong>Draft sale orders</strong> (only if\n"
+"                        you allow it): TaskTeam creates sale orders in draft with the signed\n"
+"                        delivery note PDF attached, for your office to review and invoice. It\n"
+"                        never confirms, changes or deletes anything."
+msgstr ""
+
+#. module: taskteam_connector
+#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
+msgid ""
 "<strong>Employees</strong>: name, company, job position, work phone and\n"
 "                        mobile, work email and, when the TaskTeam user may read it in Odoo,\n"
 "                        the identification number."
@@ -49,7 +58,7 @@ msgid ""
 "                    field teams) run by Task Team Tech, S.L. It needs a TaskTeam account.\n"
 "                    This assistant creates, in this database, a dedicated internal user\n"
 "                    <code>taskteam</code> with minimal rights and an API key for it. TaskTeam\n"
-"                    then reads, through Odoo's external API, only what that user can read:"
+"                    then uses Odoo's external API with that user's rights only:"
 msgstr ""
 
 #. module: taskteam_connector
@@ -69,6 +78,11 @@ msgstr ""
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_key__key
 msgid "API key"
+msgstr ""
+
+#. module: taskteam_connector
+#: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__allow_sale_orders
+msgid "Allow TaskTeam to create draft sale orders"
 msgstr ""
 
 #. module: taskteam_connector
@@ -149,8 +163,8 @@ msgstr ""
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
-"I understand that TaskTeam is an external service and I allow it to read the"
-" data listed above"
+"I understand that TaskTeam is an external service and I allow it the access "
+"listed above"
 msgstr ""
 
 #. module: taskteam_connector
@@ -218,6 +232,11 @@ msgid ""
 msgstr ""
 
 #. module: taskteam_connector
+#: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__sales_available
+msgid "Sales Available"
+msgstr ""
+
+#. module: taskteam_connector
 #. odoo-python
 #: code:addons/taskteam_connector/wizard/taskteam_connect_wizard.py:0
 msgid "Select at least one company."
@@ -226,6 +245,14 @@ msgstr ""
 #. module: taskteam_connector
 #: model:ir.ui.menu,name:taskteam_connector.menu_taskteam_connect
 msgid "TaskTeam"
+msgstr ""
+
+#. module: taskteam_connector
+#: model:ir.model.fields,help:taskteam_connector.field_taskteam_connect_wizard__allow_sale_orders
+msgid ""
+"TaskTeam creates sale orders in draft with the signed delivery note PDF "
+"attached. It never confirms, changes or deletes anything. Untick it and "
+"create a new key to take this permission away."
 msgstr ""
 
 #. module: taskteam_connector

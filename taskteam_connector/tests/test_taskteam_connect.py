@@ -1,7 +1,8 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
+import base64
 import datetime
 
-from odoo import fields
+from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
@@ -190,3 +191,72 @@ class TestTaskteamConnect(TransactionCase):
         })
         with self.assertRaises(AccessError):
             self.env(user=officer)['taskteam.connect.wizard'].create({'consent': True})
+
+
+@tagged('post_install', '-at_install')
+class TestTaskteamSaleOrders(TransactionCase):
+    """The optional right to create draft sale orders (Sales installed or not)."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.admin = cls.env.ref('base.user_admin')
+        cls.Wizard = cls.env(user=cls.admin)['taskteam.connect.wizard']
+        cls.sale_installed = bool(cls.env['ir.module.module'].search_count(
+            [('name', '=', 'sale'), ('state', '=', 'installed')]))
+
+    def _connect(self, allow):
+        self.Wizard.create({'consent': True, 'allow_sale_orders': allow})._connect()
+        return self.env['res.users'].search([('login', '=', TASKTEAM_LOGIN)])
+
+    def test_without_sales_the_option_is_hidden_and_does_nothing(self):
+        if self.sale_installed:
+            self.skipTest('Sales is installed')
+        self.assertFalse(self.Wizard.create({}).sales_available)
+        user = self._connect(allow=True)
+        salesman = self.env.ref('sales_team.group_sale_salesman', raise_if_not_found=False)
+        if salesman:
+            self.assertNotIn(salesman, user.all_group_ids)
+
+    def test_sales_group_linked_when_ticked_and_unlinked_when_unticked(self):
+        if not self.sale_installed:
+            self.skipTest('Sales is not installed')
+        salesman = self.env.ref('sales_team.group_sale_salesman')
+        self.assertTrue(self.Wizard.create({}).sales_available)
+        user = self._connect(allow=False)
+        self.assertNotIn(salesman, user.all_group_ids)
+        self.assertFalse(self.Wizard.create({}).allow_sale_orders)
+        self._connect(allow=True)
+        self.assertIn(salesman, user.group_ids)
+        # The next time the wizard opens, the option shows as ticked.
+        self.assertTrue(self.Wizard.create({}).allow_sale_orders)
+        self._connect(allow=False)
+        self.assertNotIn(salesman, user.all_group_ids)
+
+    def test_draft_sale_order_with_pdf_but_not_other_orders(self):
+        if not self.sale_installed:
+            self.skipTest('Sales is not installed')
+        user = self._connect(allow=True)
+        customer = self.env['res.partner'].create({'name': 'Example Customer'})
+        product = self.env['product.product'].create({'name': 'Example service', 'type': 'service'})
+        admin_order = self.env['sale.order'].with_user(self.admin).create(
+            {'partner_id': customer.id, 'user_id': self.admin.id})
+        as_taskteam = self.env(user=user)
+        order = as_taskteam['sale.order'].create({
+            'partner_id': customer.id,
+            'order_line': [Command.create({'product_id': product.id, 'product_uom_qty': 2})],
+        })
+        self.assertEqual(order.state, 'draft')
+        self.assertEqual(order.user_id, user)
+        attachment = as_taskteam['ir.attachment'].create({
+            'name': 'delivery-note.pdf', 'res_model': 'sale.order', 'res_id': order.id,
+            'mimetype': 'application/pdf', 'datas': base64.b64encode(b'%PDF-1.4 example'),
+        })
+        self.assertEqual(attachment.res_id, order.id)
+        with self.assertRaises(AccessError):
+            as_taskteam['sale.order'].browse(admin_order.id).write({'note': 'changed'})
+        with self.assertRaises(AccessError):
+            as_taskteam['ir.attachment'].create({
+                'name': 'other.pdf', 'res_model': 'sale.order', 'res_id': admin_order.id,
+                'datas': base64.b64encode(b'%PDF-1.4 example'),
+            })
