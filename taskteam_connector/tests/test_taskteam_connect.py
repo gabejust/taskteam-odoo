@@ -131,6 +131,16 @@ class TestTaskteamConnect(TransactionCase):
         self.assertNotIn('key', self.Wizard._fields)
         self.assertNotIn(key, str(self.Wizard.create({}).read()))
 
+    def test_key_dialog_shows_key(self):
+        """The dialog gets its values from the action context, as in the UI."""
+        action, key = self._connect()
+        spec = {name: {} for name in ('key', 'odoo_url', 'database', 'login', 'expiration_date')}
+        values = self.admin_env['taskteam.connect.key'].with_context(
+            action['context']).onchange({}, [], spec)['value']
+        self.assertEqual(values['key'], key)
+        self.assertEqual(values['login'], TASKTEAM_LOGIN)
+        self.assertEqual(values['database'], self.env.cr.dbname)
+
     def test_key_longer_than_group_allows_is_refused(self):
         """The 1-year key is accepted only thanks to the «TaskTeam API» group."""
         wizard = self._wizard()
