@@ -1,7 +1,7 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
 {
     'name': 'TaskTeam Connector',
-    'version': '19.0.1.0.0',
+    'version': '20.0.1.0.0',
     'summary': 'Create a dedicated read-only API user and key so TaskTeam '
                'can read your employees, companies and contacts',
     'category': 'Productivity',
