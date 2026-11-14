@@ -1,0 +1,85 @@
+<section class="container">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h2 class="mt-4 mb-2">TaskTeam Connector</h2>
+            <p class="lead">Give TaskTeam read access to your employees, companies and
+                contacts in one click, with a dedicated user and an API key that you control.</p>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <strong>TaskTeam is an external service.</strong> TaskTeam is a task and chat
+                app for field teams, run by Task Team Tech, S.L. You need a TaskTeam account
+                to use this module. The module only prepares access inside your Odoo:
+                <strong>it does not send any data anywhere by itself</strong>. TaskTeam reads
+                your data only after you paste the key into TaskTeam.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>What the module does</h3>
+            <p>An administrator opens <em>Settings › TaskTeam</em>, ticks the consent box
+                and clicks <em>Connect TaskTeam</em>. The module then creates:</p>
+            <ul>
+                <li>a group <strong>TaskTeam API</strong> that allows API keys valid for
+                    up to 1 year (reused if it already exists);</li>
+                <li>an internal user <strong>TaskTeam</strong> (login <code>taskteam</code>,
+                    no password, no invitation email) with minimal rights: Internal User and
+                    Employees › Officer, limited to the companies you select;</li>
+                <li>an API key for that user, valid for 365 days and shown only once.</li>
+            </ul>
+            <p>Running it again creates a new key without duplicating the user or the group.
+                <em>Disconnect</em> revokes all keys of the TaskTeam user and archives it.</p>
+        </div>
+        <div class="col-md-6">
+            <h3>What TaskTeam reads</h3>
+            <p>TaskTeam reads, read-only, through Odoo's external API:</p>
+            <ul>
+                <li><strong>Employees</strong>: name, company, job position, work phone and
+                    mobile, work email and, when allowed by your settings in TaskTeam, the
+                    identification number;</li>
+                <li><strong>Companies</strong>: the companies you select;</li>
+                <li><strong>Customers and suppliers</strong>: contacts marked as customer or
+                    supplier;</li>
+                <li><strong>The key itself</strong>: its expiry date, to remind you to renew it.</li>
+            </ul>
+            <p>You stay the owner of your data. You can revoke access at any time from
+                <em>Settings › TaskTeam › Disconnect</em> or from the user's API keys.</p>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Setup</h3>
+            <ol>
+                <li>Install the module (it depends only on <em>base</em> and
+                    <em>Employees</em>).</li>
+                <li>Go to <em>Settings › TaskTeam</em>.</li>
+                <li>Select the companies TaskTeam may read, tick the consent box and click
+                    <em>Connect TaskTeam</em>. Odoo may ask for your password.</li>
+                <li>Copy the key and your Odoo address and paste them in
+                    <em>TaskTeam › Perfil › Conexiones › Odoo</em>.</li>
+                <li>Before the key expires (365 days), open <em>Settings › TaskTeam</em> again
+                    and click <em>Create a new key</em>.</li>
+            </ol>
+            <h3>Requirements</h3>
+            <ul>
+                <li>A TaskTeam account.</li>
+                <li>An Odoo database where you can install modules and use the external API
+                    (Odoo.sh or on-premise).</li>
+            </ul>
+            <h3>Support</h3>
+            <p>Questions: <a href="mailto:support@taskteam.app">support@taskteam.app</a></p>
+        </div>
+    </div>
+</section>
