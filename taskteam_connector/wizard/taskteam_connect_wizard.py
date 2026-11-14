@@ -140,11 +140,7 @@ class TaskteamConnectWizard(models.TransientModel):
             KEY_SCOPE, name, expiration_date)
         return key, expiration_date
 
-    def _connect(self):
-        """Create (or reuse) the group and the user, then return a new key.
-
-        Returns the window action that shows the key once.
-        """
+    def _check_can_connect(self):
         self.ensure_one()
         if not self.env.is_system():
             raise UserError(_('Only administrators can connect TaskTeam.'))
@@ -154,6 +150,13 @@ class TaskteamConnectWizard(models.TransientModel):
                 'service and will read the data listed on this screen.'))
         if not self.company_ids:
             raise UserError(_('Select at least one company.'))
+
+    def _connect(self):
+        """Create (or reuse) the group and the user, then return a new key.
+
+        Returns the window action that shows the key once.
+        """
+        self._check_can_connect()
         group = self._get_or_create_group()
         user = self._get_or_create_user(group)
         key, expiration_date = self._generate_api_key(user)
@@ -172,8 +175,13 @@ class TaskteamConnectWizard(models.TransientModel):
             },
         }
 
-    @check_identity
     def action_connect(self):
+        # Check consent before Odoo asks for the administrator's password.
+        self._check_can_connect()
+        return self.action_connect_confirmed()
+
+    @check_identity
+    def action_connect_confirmed(self):
         return self._connect()
 
     def action_disconnect(self):

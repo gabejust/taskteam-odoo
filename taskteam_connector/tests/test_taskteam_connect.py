@@ -52,6 +52,9 @@ class TestTaskteamConnect(TransactionCase):
         wizard = self._wizard(consent=False)
         with self.assertRaises(UserError):
             wizard._connect()
+        # The button refuses before asking for the administrator's password.
+        with self.assertRaisesRegex(UserError, 'consent'):
+            wizard.action_connect()
         self.assertFalse(self._taskteam_users())
         self.assertFalse(self._taskteam_groups())
 
