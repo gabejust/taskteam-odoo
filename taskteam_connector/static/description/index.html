@@ -2,8 +2,9 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2 class="mt-4 mb-2">TaskTeam Connector</h2>
-            <p class="lead">Give TaskTeam read access to your employees, companies and
-                contacts in one click, with a dedicated user and an API key that you control.</p>
+            <p class="lead">Give TaskTeam access to your employees, companies and contacts
+                and, if you allow it, let it create draft sale orders from signed delivery
+                notes. One click, with a dedicated user and an API key that you control.</p>
         </div>
     </div>
 </section>
@@ -15,8 +16,8 @@
                 <strong>TaskTeam is an external service.</strong> TaskTeam is a task and chat
                 app for field teams, run by Task Team Tech, S.L. You need a TaskTeam account
                 to use this module. The module only prepares access inside your Odoo:
-                <strong>it does not send any data anywhere by itself</strong>. TaskTeam reads
-                your data only after you paste the key into TaskTeam.
+                <strong>it does not send any data anywhere by itself</strong>. TaskTeam can use
+                your Odoo only after you paste the key into TaskTeam.
             </div>
         </div>
     </div>
@@ -33,15 +34,16 @@
                     up to 1 year (reused if it already exists);</li>
                 <li>an internal user <strong>TaskTeam</strong> (login <code>taskteam</code>,
                     no password, no invitation email) with minimal rights: Internal User and
-                    Employees › Officer, limited to the companies you select;</li>
+                    Employees › Officer, limited to the companies you select and, only if you
+                    tick it and Sales is installed, Sales › User: Own Documents Only;</li>
                 <li>an API key for that user, valid for 365 days and shown only once.</li>
             </ul>
             <p>Running it again creates a new key without duplicating the user or the group.
                 <em>Disconnect</em> revokes all keys of the TaskTeam user and archives it.</p>
         </div>
         <div class="col-md-6">
-            <h3>What TaskTeam reads</h3>
-            <p>TaskTeam reads, read-only, through Odoo's external API:</p>
+            <h3>What TaskTeam does</h3>
+            <p>Through Odoo's external API, with that user's rights only, TaskTeam reads:</p>
             <ul>
                 <li><strong>Employees</strong>: name, company, job position, work phone and
                     mobile, work email and, when the TaskTeam user may read it in Odoo, the
@@ -51,6 +53,11 @@
                     supplier;</li>
                 <li><strong>The key itself</strong>: its expiry date, to remind you to renew it.</li>
             </ul>
+            <p><strong>Draft sale orders</strong> (only if you allow it, and only when the
+                Sales app is installed): TaskTeam creates sale orders in draft with the signed
+                delivery note PDF attached, for your office to review and invoice. It never
+                confirms, changes or deletes anything. Untick the option and create a new key to
+                take this permission away.</p>
             <p>You stay the owner of your data. You can revoke access at any time from
                 <em>Settings › TaskTeam › Disconnect</em> or from the user's API keys.</p>
         </div>

@@ -1,7 +1,8 @@
 # TaskTeam Connector for Odoo
 
-Odoo module that prepares read-only access for TaskTeam, an
-external task and chat app for field teams run by Task Team Tech, S.L.
+Odoo module that prepares access for TaskTeam, an external task and chat app for field
+teams run by Task Team Tech, S.L.: read access to employees, companies and contacts and,
+only if the administrator allows it, the right to create draft sale orders.
 
 The module has **no business logic and makes no outbound connection**. It only creates,
 inside the customer's database and after an explicit consent, what an administrator would
@@ -41,9 +42,9 @@ Running it again creates a new key; old keys keep working until revoked. **Disco
 Creating a key goes through Odoo's `check_identity` (the administrator may be asked for
 their password), like Odoo's own *New API Key* button.
 
-## What TaskTeam reads
+## What TaskTeam does with the key
 
-Through Odoo's external API, with the key:
+Through Odoo's external API, with the TaskTeam user's rights only, it reads:
 
 - `hr.employee`: name, company, job, work phone/mobile, work email, `identification_id` when
   allowed by the TaskTeam settings;
@@ -51,8 +52,16 @@ Through Odoo's external API, with the key:
 - `res.partner` with `customer_rank` / `supplier_rank`;
 - `res.users.apikeys`: the key's own expiry date.
 
+Only if the administrator ticks *Allow TaskTeam to create draft sale orders* (shown when the
+Sales app is installed; `sale` is not a dependency), the user also gets
+*Sales › User: Own Documents Only* (`sales_team.group_sale_salesman`). TaskTeam then creates
+`sale.order` records in draft, with their lines and the signed delivery note PDF as an
+`ir.attachment`, for the office to review and invoice. It never confirms, changes or deletes
+anything. Unticking the option and creating a new key removes the group again.
+
 Note: *Employees › Officer* is the smallest standard group that can read employees' private
-fields; technically it can also edit employees. TaskTeam only reads.
+fields; technically it can also edit employees. *Own Documents Only* can also edit the orders
+TaskTeam created and orders without a salesperson. TaskTeam does neither.
 
 ## Layout
 
