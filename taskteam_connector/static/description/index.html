@@ -29,14 +29,13 @@
             <p>An administrator opens <em>Settings › TaskTeam</em>, ticks the consent box
                 and clicks <em>Connect TaskTeam</em>. The module then creates:</p>
             <ul>
-                <li>a group <strong>TaskTeam API</strong> that allows API keys valid for
-                    up to 1 year (reused if it already exists);</li>
                 <li>an internal user <strong>TaskTeam</strong> (login <code>taskteam</code>,
                     no password, no invitation email) with minimal rights: Internal User and
                     Employees › Officer, limited to the companies you select;</li>
-                <li>an API key for that user, valid for 365 days and shown only once.</li>
+                <li>an API key for that user, shown only once. <strong>On Odoo 17 API keys
+                    do not expire</strong>: the key stays valid until you revoke it.</li>
             </ul>
-            <p>Running it again creates a new key without duplicating the user or the group.
+            <p>Running it again creates a new key without duplicating the user.
                 <em>Disconnect</em> revokes all keys of the TaskTeam user and archives it.</p>
         </div>
         <div class="col-md-6">
@@ -49,7 +48,6 @@
                 <li><strong>Companies</strong>: the companies you select;</li>
                 <li><strong>Customers and suppliers</strong>: contacts marked as customer or
                     supplier;</li>
-                <li><strong>The key itself</strong>: its expiry date, to remind you to renew it.</li>
             </ul>
             <p>You stay the owner of your data. You can revoke access at any time from
                 <em>Settings › TaskTeam › Disconnect</em> or from the user's API keys.</p>
@@ -69,8 +67,9 @@
                     <em>Connect TaskTeam</em>. Odoo may ask for your password.</li>
                 <li>Copy the key and your Odoo address and paste them in
                     <em>TaskTeam › Perfil › Conexiones › Odoo</em>.</li>
-                <li>Before the key expires (365 days), open <em>Settings › TaskTeam</em> again
-                    and click <em>Create a new key</em>.</li>
+                <li>To replace the key, open <em>Settings › TaskTeam</em> again, click
+                    <em>Create a new key</em> and revoke the old one from the TaskTeam user's
+                    API keys.</li>
             </ol>
             <h3>Requirements</h3>
             <ul>

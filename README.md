@@ -23,17 +23,17 @@ One branch per Odoo version, as required by the Odoo Apps store:
 *Settings › TaskTeam* opens the **Connect TaskTeam** assistant (administrators only). After
 the administrator ticks the consent box, one click:
 
-1. creates the group **TaskTeam API** with `api_key_duration = 365` (or reuses it and raises
-   it to 365 days);
-2. creates the internal user **TaskTeam** (login `taskteam`, no password, no invitation
-   email) with *Internal User*, *Employees › Officer* (`hr.group_hr_user`) and *TaskTeam API*,
-   restricted to the selected companies (default: all companies the administrator can access);
-   an archived TaskTeam user is reactivated instead of duplicated;
-3. generates an API key for that user valid for 365 days with
-   `env['res.users.apikeys'].with_user(user)._generate('rpc', name, expiration_date)`
-   (runs without sudo, so Odoo checks the duration against the user's groups), and shows it
-   once together with the Odoo address. Odoo stores only the key hash; the module stores
-   nothing.
+1. creates the internal user **TaskTeam** (login `taskteam`, no password, no invitation
+   email) with *Internal User* and *Employees › Officer* (`hr.group_hr_user`), restricted to
+   the selected companies (default: all companies the administrator can access); an archived
+   TaskTeam user is reactivated instead of duplicated;
+2. generates an API key for that user with
+   `env['res.users.apikeys'].with_user(user)._generate('rpc', name)` and shows it once
+   together with the Odoo address. Odoo stores only the key hash; the module stores nothing.
+
+**Odoo 17 has no API key expiry** (`expiration_date` and the groups' `api_key_duration`
+arrived in Odoo 18), so on this branch the key does not expire and no *TaskTeam API* group is
+created. The key stays valid until it is revoked (for example with **Disconnect**).
 
 Running it again creates a new key; old keys keep working until revoked. **Disconnect**
 (with confirmation) revokes every key of the TaskTeam user and archives it.
@@ -49,7 +49,7 @@ Through Odoo's external API, with the key:
   allowed by the TaskTeam settings;
 - `res.company`;
 - `res.partner` with `customer_rank` / `supplier_rank`;
-- `res.users.apikeys`: the key's own expiry date.
+- `res.users.apikeys`: the key's own record (no expiry date on Odoo 17).
 
 Note: *Employees › Officer* is the smallest standard group that can read employees' private
 fields; technically it can also edit employees. TaskTeam only reads.
@@ -71,13 +71,13 @@ taskteam_connector/
 docker network create tt-odoo
 docker run -d --name tt-odoo-db --network tt-odoo \
   -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres postgres:16
-docker run --rm --network tt-odoo -v "$PWD":/mnt/extra-addons odoo:18.0 \
+docker run --rm --network tt-odoo -v "$PWD":/mnt/extra-addons odoo:17.0 \
   odoo --db_host=tt-odoo-db --db_user=odoo --db_password=odoo -d tt_test \
   -i taskteam_connector --test-enable --stop-after-init --without-demo=all
 docker rm -f tt-odoo-db && docker network rm tt-odoo
 ```
 
-Use the image that matches the branch (`odoo:18.0` on this branch).
+Use the image that matches the branch (`odoo:17.0` on this branch).
 
 ## License
 

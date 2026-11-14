@@ -3,12 +3,15 @@
 
 This module has no business logic and never contacts any external server.
 It only creates, inside this database, what an administrator would otherwise
-create by hand: a group allowing 1-year API keys, a dedicated internal user
-with minimal rights, and an API key for that user. The key is shown once and
-is never stored in clear text (Odoo stores only its hash).
-"""
+create by hand: a dedicated internal user with minimal rights and an API key
+for that user. The key is shown once and is never stored in clear text (Odoo
+stores only its hash).
 
-import datetime
+Odoo 17 has no expiry for API keys (``expiration_date`` and the groups'
+``api_key_duration`` arrived in Odoo 18), so on this branch the key does not
+expire and no «TaskTeam API» group is needed: the key stays valid until it
+is revoked, for example with «Disconnect».
+"""
 
 from odoo import Command, _, api, fields, models
 from odoo.addons.base.models.res_users import check_identity
@@ -16,10 +19,6 @@ from odoo.exceptions import UserError
 
 TASKTEAM_LOGIN = 'taskteam'
 TASKTEAM_USER_NAME = 'TaskTeam'
-TASKTEAM_GROUP_NAME = 'TaskTeam API'
-# Odoo caps the lifetime of API keys of non-admin users with the highest
-# ``api_key_duration`` among their groups.
-KEY_DURATION_DAYS = 365
 # Odoo 17 to 19 accept keys with scope NULL or 'rpc' for the external API;
 # Odoo 20 requires a scope and uses 'rpc'. 'rpc' works on all of them.
 KEY_SCOPE = 'rpc'
@@ -71,11 +70,6 @@ class TaskteamConnectWizard(models.TransientModel):
             [('login', '=', TASKTEAM_LOGIN)], limit=1)
 
     @api.model
-    def _find_taskteam_group(self):
-        return self.env['res.groups'].sudo().with_context(lang='en_US').search(
-            [('name', '=', TASKTEAM_GROUP_NAME)], limit=1)
-
-    @api.model
     def _find_api_keys(self, user):
         return self.env['res.users.apikeys'].sudo().search(
             [('user_id', '=', user.id)], order='id desc')
@@ -84,28 +78,13 @@ class TaskteamConnectWizard(models.TransientModel):
     # Steps
     # ------------------------------------------------------------------
 
-    @api.model
-    def _get_or_create_group(self):
-        group = self._find_taskteam_group()
-        if not group:
-            group = self.env['res.groups'].sudo().with_context(lang='en_US').create({
-                'name': TASKTEAM_GROUP_NAME,
-                'api_key_duration': KEY_DURATION_DAYS,
-                'comment': 'Members can create API keys valid for up to 1 year. '
-                           'Created by the TaskTeam Connector module.',
-            })
-        elif group.api_key_duration < KEY_DURATION_DAYS:
-            group.api_key_duration = KEY_DURATION_DAYS
-        return group
-
-    def _get_or_create_user(self, group):
+    def _get_or_create_user(self):
         self.ensure_one()
         companies = self.company_ids
         main_company = self.env.company if self.env.company in companies else companies[:1]
         required_groups = (
             self.env.ref('base.group_user')
             | self.env.ref('hr.group_hr_user')
-            | group
         )
         user = self._find_taskteam_user()
         if user:
@@ -130,15 +109,10 @@ class TaskteamConnectWizard(models.TransientModel):
         """Generate an API key owned by ``user`` and return it in clear text.
 
         ``res.users.apikeys._generate`` creates the key for ``env.user``, so it
-        runs as the TaskTeam user. It runs without sudo on purpose: Odoo then
-        checks the expiry against the user's groups (``api_key_duration``),
-        which proves the «TaskTeam API» group does its job.
+        runs as the TaskTeam user. Odoo 17 keys have no expiry date.
         """
-        expiration_date = fields.Datetime.now() + datetime.timedelta(days=KEY_DURATION_DAYS)
         name = 'TaskTeam %s' % fields.Date.to_string(fields.Date.context_today(self))
-        key = self.env['res.users.apikeys'].with_user(user)._generate(
-            KEY_SCOPE, name, expiration_date)
-        return key, expiration_date
+        return self.env['res.users.apikeys'].with_user(user)._generate(KEY_SCOPE, name)
 
     def _check_can_connect(self):
         self.ensure_one()
@@ -152,14 +126,13 @@ class TaskteamConnectWizard(models.TransientModel):
             raise UserError(_('Select at least one company.'))
 
     def _connect(self):
-        """Create (or reuse) the group and the user, then return a new key.
+        """Create (or reuse) the user, then return a new key.
 
         Returns the window action that shows the key once.
         """
         self._check_can_connect()
-        group = self._get_or_create_group()
-        user = self._get_or_create_user(group)
-        key, expiration_date = self._generate_api_key(user)
+        user = self._get_or_create_user()
+        key = self._generate_api_key(user)
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'taskteam.connect.key',
@@ -171,7 +144,6 @@ class TaskteamConnectWizard(models.TransientModel):
                 'default_odoo_url': self.odoo_url,
                 'default_database': self.env.cr.dbname,
                 'default_login': user.login,
-                'default_expiration_date': fields.Datetime.to_string(expiration_date),
             },
         }
 
@@ -217,4 +189,3 @@ class TaskteamConnectKey(models.AbstractModel):
     odoo_url = fields.Char(string='Odoo address', readonly=True)
     database = fields.Char(readonly=True)
     login = fields.Char(readonly=True)
-    expiration_date = fields.Datetime(string='Valid until', readonly=True)

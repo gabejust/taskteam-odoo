@@ -28,12 +28,15 @@
                     <li><strong>Companies</strong>: the companies selected below.</li>
                     <li><strong>Customers and suppliers</strong>: contacts marked as customer or
                         supplier.</li>
-                    <li><strong>The key itself</strong>: its expiry date, to remind you to renew it.</li>
                 </ul>
                 <p>
                     This module sends nothing anywhere by itself. TaskTeam only gets access
                     when you paste the key into TaskTeam, and loses it when you click
                     <em>Disconnect</em> or revoke the key.
+                </p>
+                <p>
+                    <strong>Odoo 17 API keys do not expire.</strong> The key created here stays
+                    valid until you click <em>Disconnect</em> or revoke it.
                 </p>
                 <group>
                     <field name="company_ids" widget="many2many_tags"
@@ -45,11 +48,10 @@
                 <div invisible="not api_key_ids">
                     <h5>Keys of the TaskTeam user</h5>
                     <field name="api_key_ids" readonly="1" nolabel="1">
-                        <list create="0" delete="0" edit="0">
+                        <tree create="0" delete="0" edit="0">
                             <field name="name"/>
                             <field name="create_date"/>
-                            <field name="expiration_date"/>
-                        </list>
+                        </tree>
                     </field>
                 </div>
                 <footer>
@@ -78,8 +80,11 @@
                 <group>
                     <field name="key" widget="CopyClipboardChar"/>
                     <field name="odoo_url" widget="CopyClipboardChar"/>
-                    <field name="expiration_date"/>
                 </group>
+                <p>
+                    This key does not expire (Odoo 17 has no expiry for API keys). It stays
+                    valid until you click <em>Disconnect</em> in Settings › TaskTeam or revoke it.
+                </p>
                 <p class="text-muted">
                     If TaskTeam asks for them: database <field name="database" class="d-inline"/>,
                     user <field name="login" class="d-inline"/>.

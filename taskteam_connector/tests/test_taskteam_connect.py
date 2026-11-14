@@ -1,15 +1,8 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
-import datetime
-
-from odoo import fields
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import TransactionCase, tagged
 
-from odoo.addons.taskteam_connector.wizard.taskteam_connect_wizard import (
-    KEY_DURATION_DAYS,
-    TASKTEAM_GROUP_NAME,
-    TASKTEAM_LOGIN,
-)
+from odoo.addons.taskteam_connector.wizard.taskteam_connect_wizard import TASKTEAM_LOGIN
 
 
 @tagged('post_install', '-at_install')
@@ -39,10 +32,6 @@ class TestTaskteamConnect(TransactionCase):
         return self.env['res.users'].with_context(active_test=False).search(
             [('login', '=', TASKTEAM_LOGIN)])
 
-    def _taskteam_groups(self):
-        return self.env['res.groups'].with_context(lang='en_US').search(
-            [('name', '=', TASKTEAM_GROUP_NAME)])
-
     def _keys(self, user):
         return self.env['res.users.apikeys'].search([('user_id', '=', user.id)])
 
@@ -56,24 +45,18 @@ class TestTaskteamConnect(TransactionCase):
         with self.assertRaisesRegex(UserError, 'consent'):
             wizard.action_connect()
         self.assertFalse(self._taskteam_users())
-        self.assertFalse(self._taskteam_groups())
 
     def test_default_companies_are_all_allowed(self):
         wizard = self.Wizard.create({})
         self.assertEqual(wizard.company_ids, self.admin.company_ids)
         self.assertIn(self.company_b, wizard.company_ids)
 
-    def test_group_created_with_365_days(self):
+    def test_no_api_group_on_odoo_17(self):
+        """Odoo 17 has no api_key_duration, so no «TaskTeam API» group is made."""
+        self.assertNotIn('api_key_duration', self.env['res.groups']._fields)
+        groups_before = self.env['res.groups'].search_count([])
         self._connect()
-        group = self._taskteam_groups()
-        self.assertEqual(len(group), 1)
-        self.assertEqual(group.api_key_duration, KEY_DURATION_DAYS)
-
-    def test_existing_group_is_reused_and_extended(self):
-        group = self.env['res.groups'].create({'name': TASKTEAM_GROUP_NAME, 'api_key_duration': 90})
-        self._connect()
-        self.assertEqual(self._taskteam_groups(), group)
-        self.assertEqual(group.api_key_duration, KEY_DURATION_DAYS)
+        self.assertEqual(self.env['res.groups'].search_count([]), groups_before)
 
     def test_user_rights_and_no_password(self):
         self._connect(company_ids=[(6, 0, self.company_b.ids)])
@@ -84,7 +67,6 @@ class TestTaskteamConnect(TransactionCase):
         self.assertTrue(user._is_internal())
         self.assertTrue(user.has_group('base.group_user'))
         self.assertTrue(user.has_group('hr.group_hr_user'))
-        self.assertIn(self._taskteam_groups(), user.groups_id)
         self.assertFalse(user.has_group('base.group_system'))
         self.assertFalse(user.has_group('base.group_erp_manager'))
         self.assertFalse(user.has_group('hr.group_hr_manager'))
@@ -111,7 +93,7 @@ class TestTaskteamConnect(TransactionCase):
         else:
             partners.search_read([('is_company', '=', True)], ['name', 'email', 'phone'])
 
-    def test_key_valid_365_days_and_shown_once(self):
+    def test_key_without_expiry_and_shown_once(self):
         action, key = self._connect()
         user = self._taskteam_users()
         self.assertEqual(action['res_model'], 'taskteam.connect.key')
@@ -123,8 +105,9 @@ class TestTaskteamConnect(TransactionCase):
             self.env['res.users.apikeys']._check_credentials(scope='rpc', key=key), user.id)
         keys = self._keys(user)
         self.assertEqual(len(keys), 1)
-        expected = fields.Datetime.now() + datetime.timedelta(days=KEY_DURATION_DAYS)
-        self.assertLess(abs(keys.expiration_date - expected), datetime.timedelta(minutes=5))
+        # Odoo 17 API keys have no expiry date.
+        self.assertNotIn('expiration_date', keys._fields)
+        self.assertNotIn('default_expiration_date', action['context'])
         # Odoo stores only a hash, and the wizard has no field holding the key.
         self.env.cr.execute('SELECT key FROM res_users_apikeys WHERE user_id = %s', [user.id])
         self.assertNotEqual(self.env.cr.fetchone()[0], key)
@@ -134,21 +117,12 @@ class TestTaskteamConnect(TransactionCase):
     def test_key_dialog_shows_key(self):
         """The dialog gets its values from the action context, as in the UI."""
         action, key = self._connect()
-        spec = {name: {} for name in ('key', 'odoo_url', 'database', 'login', 'expiration_date')}
+        spec = {name: {} for name in ('key', 'odoo_url', 'database', 'login')}
         values = self.admin_env['taskteam.connect.key'].with_context(
             action['context']).onchange({}, [], spec)['value']
         self.assertEqual(values['key'], key)
         self.assertEqual(values['login'], TASKTEAM_LOGIN)
         self.assertEqual(values['database'], self.env.cr.dbname)
-
-    def test_key_longer_than_group_allows_is_refused(self):
-        """The 1-year key is accepted only thanks to the «TaskTeam API» group."""
-        wizard = self._wizard()
-        wizard._connect()
-        group = self._taskteam_groups()
-        group.api_key_duration = 90
-        with self.assertRaises(ValidationError):
-            wizard._generate_api_key(self._taskteam_users())
 
     def test_rerun_creates_new_key_without_duplicates(self):
         _action, key1 = self._connect()
@@ -158,7 +132,6 @@ class TestTaskteamConnect(TransactionCase):
         self.assertNotEqual(key1, key2)
         user = self._taskteam_users()
         self.assertEqual(len(user), 1)
-        self.assertEqual(len(self._taskteam_groups()), 1)
         self.assertEqual(len(self._keys(user)), 2)
         apikeys = self.env['res.users.apikeys']
         self.assertEqual(apikeys._check_credentials(scope='rpc', key=key1), user.id)
