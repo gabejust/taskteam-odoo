@@ -1,5 +1,4 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
-import base64
 import datetime
 
 from odoo import Command, fields
@@ -250,7 +249,8 @@ class TestTaskteamSaleOrders(TransactionCase):
         self.assertEqual(order.user_id, user)
         attachment = as_taskteam['ir.attachment'].create({
             'name': 'delivery-note.pdf', 'res_model': 'sale.order', 'res_id': order.id,
-            'mimetype': 'application/pdf', 'datas': base64.b64encode(b'%PDF-1.4 example'),
+            # Odoo 20 has no `datas` field any more: the content goes in `raw`.
+            'mimetype': 'application/pdf', 'raw': b'%PDF-1.4 example',
         })
         self.assertEqual(attachment.res_id, order.id)
         with self.assertRaises(AccessError):
@@ -258,5 +258,5 @@ class TestTaskteamSaleOrders(TransactionCase):
         with self.assertRaises(AccessError):
             as_taskteam['ir.attachment'].create({
                 'name': 'other.pdf', 'res_model': 'sale.order', 'res_id': admin_order.id,
-                'datas': base64.b64encode(b'%PDF-1.4 example'),
+                'raw': b'%PDF-1.4 example',
             })
