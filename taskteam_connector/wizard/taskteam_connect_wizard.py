@@ -22,6 +22,10 @@ TASKTEAM_USER_NAME = 'TaskTeam'
 # Odoo 17 to 19 accept keys with scope NULL or 'rpc' for the external API;
 # Odoo 20 requires a scope and uses 'rpc'. 'rpc' works on all of them.
 KEY_SCOPE = 'rpc'
+# Sales › User: Own Documents Only. Lets TaskTeam create draft sale orders
+# (and attach the signed delivery note to them) without seeing or changing
+# anybody else's orders. Only offered when the Sales app is installed.
+SALES_GROUP_XMLID = 'sales_team.group_sale_salesman'
 
 
 class TaskteamConnectWizard(models.TransientModel):
@@ -46,10 +50,29 @@ class TaskteamConnectWizard(models.TransientModel):
     connected = fields.Boolean(compute='_compute_connection')
     api_key_ids = fields.Many2many(
         'res.users.apikeys', string='Existing keys', compute='_compute_connection')
+    sales_available = fields.Boolean(compute='_compute_sales_available')
+    allow_sale_orders = fields.Boolean(
+        string='Allow TaskTeam to create draft sale orders',
+        default=lambda self: self._default_allow_sale_orders(),
+        help='TaskTeam creates sale orders in draft with the signed delivery '
+             'note PDF attached. It never confirms, changes or deletes anything. '
+             'Untick it and create a new key to take this permission away.',
+    )
 
     def _compute_odoo_url(self):
         for wizard in self:
             wizard.odoo_url = wizard.get_base_url()
+
+    def _compute_sales_available(self):
+        available = bool(self._sales_group())
+        for wizard in self:
+            wizard.sales_available = available
+
+    @api.model
+    def _default_allow_sale_orders(self):
+        group = self._sales_group()
+        user = self._find_taskteam_user()
+        return bool(group and user and group in user.sudo().groups_id)
 
     def _compute_connection(self):
         user = self._find_taskteam_user()
@@ -68,6 +91,15 @@ class TaskteamConnectWizard(models.TransientModel):
         """Return the TaskTeam user, archived or not (empty recordset if none)."""
         return self.env['res.users'].sudo().with_context(active_test=False).search(
             [('login', '=', TASKTEAM_LOGIN)], limit=1)
+
+    @api.model
+    def _sales_group(self):
+        """The Sales «Own Documents Only» group, only when Sales is installed."""
+        installed = self.env['ir.module.module'].sudo().search_count(
+            [('name', '=', 'sale'), ('state', '=', 'installed')])
+        if not installed:
+            return self.env['res.groups']
+        return self.env.ref(SALES_GROUP_XMLID, raise_if_not_found=False) or self.env['res.groups']
 
     @api.model
     def _find_api_keys(self, user):
@@ -104,6 +136,17 @@ class TaskteamConnectWizard(models.TransientModel):
             'groups_id': [Command.set(required_groups.ids)],
         })
 
+    def _apply_sales_permission(self, user):
+        """Give or take away the right to create draft sale orders."""
+        self.ensure_one()
+        group = self._sales_group()
+        if not group:
+            return
+        if self.allow_sale_orders:
+            user.write({'groups_id': [Command.link(group.id)]})
+        elif group in user.groups_id:
+            user.write({'groups_id': [Command.unlink(group.id)]})
+
     @api.model
     def _generate_api_key(self, user):
         """Generate an API key owned by ``user`` and return it in clear text.
@@ -132,6 +175,7 @@ class TaskteamConnectWizard(models.TransientModel):
         """
         self._check_can_connect()
         user = self._get_or_create_user()
+        self._apply_sales_permission(user)
         key = self._generate_api_key(user)
         return {
             'type': 'ir.actions.act_window',

@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <form string="Connect TaskTeam">
                 <field name="connected" invisible="1"/>
+                <field name="sales_available" invisible="1"/>
                 <div class="alert alert-success" role="status" invisible="not connected">
                     TaskTeam is connected through the user <strong>TaskTeam</strong>
                     (login <code>taskteam</code>). You can create a new key (existing keys
@@ -18,7 +19,7 @@
                     field teams) run by Task Team Tech, S.L. It needs a TaskTeam account.
                     This assistant creates, in this database, a dedicated internal user
                     <code>taskteam</code> with minimal rights and an API key for it. TaskTeam
-                    then reads, through Odoo's external API, only what that user can read:
+                    then uses Odoo's external API with that user's rights only:
                 </p>
                 <ul>
                     <li><strong>Employees</strong>: name, company, job position, work phone and
@@ -27,6 +28,10 @@
                     <li><strong>Companies</strong>: the companies selected below.</li>
                     <li><strong>Customers and suppliers</strong>: contacts marked as customer or
                         supplier.</li>
+                    <li invisible="not sales_available"><strong>Draft sale orders</strong> (only if
+                        you allow it): TaskTeam creates sale orders in draft with the signed
+                        delivery note PDF attached, for your office to review and invoice. It
+                        never confirms, changes or deletes anything.</li>
                 </ul>
                 <p>
                     This module sends nothing anywhere by itself. TaskTeam only gets access
@@ -42,10 +47,14 @@
                            options="{'no_create': True}" groups="base.group_multi_company"/>
                     <field name="odoo_url" readonly="1"/>
                 </group>
+                <div class="d-flex align-items-start gap-2 mb-3" invisible="not sales_available">
+                    <field name="allow_sale_orders" nolabel="1"/>
+                    <label for="allow_sale_orders"/>
+                </div>
                 <div class="d-flex align-items-start gap-2 mb-3">
                     <field name="consent" nolabel="1"/>
                     <label for="consent" class="fw-bold"
-                           string="I understand that TaskTeam is an external service and I allow it to read the data listed above"/>
+                           string="I understand that TaskTeam is an external service and I allow it the access listed above"/>
                 </div>
                 <div invisible="not api_key_ids">
                     <h5>Keys of the TaskTeam user</h5>
