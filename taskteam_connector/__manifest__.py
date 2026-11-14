@@ -10,7 +10,7 @@
     'license': 'LGPL-3',
     'depends': ['base', 'hr'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'wizard/taskteam_connect_wizard_views.xml',
     ],
     'images': ['static/description/cover_screenshot.png'],

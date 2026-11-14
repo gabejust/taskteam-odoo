@@ -57,7 +57,7 @@ fields; technically it can also edit employees. TaskTeam only reads.
 ```
 taskteam_connector/
 ├── __manifest__.py
-├── security/ir.model.access.csv      # wizard: base.group_system only
+├── security/ir.access.csv            # wizard: base.group_system only (Odoo 20 format)
 ├── wizard/                           # taskteam.connect.wizard + taskteam.connect.key (shown once)
 ├── tests/                            # TransactionCase tests
 └── static/description/               # icon.png, cover_screenshot.png, index.html (store listing)
