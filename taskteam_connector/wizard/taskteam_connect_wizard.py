@@ -13,6 +13,7 @@ import datetime
 from odoo import Command, _, api, fields, models
 from odoo.addons.base.models.res_users import check_identity
 from odoo.exceptions import UserError
+from odoo.tools import SQL
 
 TASKTEAM_LOGIN = 'taskteam'
 TASKTEAM_USER_NAME = 'TaskTeam'
@@ -205,11 +206,15 @@ class TaskteamConnectWizard(models.TransientModel):
         }
 
 
-class TaskteamConnectKey(models.AbstractModel):
+class TaskteamConnectKey(models.Model):
     """Shows the new key once. Nothing is stored: the values only travel in
-    the action context to this dialog, like Odoo's own «API Key Ready»."""
+    the action context to this dialog, like Odoo's own «Save your API Key».
+    Odoo 20 no longer opens forms on abstract models, so this is a model
+    without a table, the same way as ``res.users.apikeys.show``."""
     _name = 'taskteam.connect.key'
     _description = 'TaskTeam key (shown once)'
+    _auto = False  # no table
+    _table_sql = SQL('(0)')
 
     # Needed for the onchange that fills the defaults from the context.
     id = fields.Id()
