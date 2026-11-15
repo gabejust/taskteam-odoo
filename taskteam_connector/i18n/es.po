@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0-20261112\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 18:47+0000\n"
+"POT-Creation-Date: 2026-11-15 20:53+0000\n"
 "PO-Revision-Date: 2026-11-14 18:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -25,56 +25,93 @@ msgstr ", usuario"
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
-msgid "<strong>Companies</strong>: the companies selected below."
-msgstr "<strong>Empresas</strong>: las empresas que elijas abajo."
+msgid ""
+"<strong>Attendances</strong>:\n"
+"                        check-in and check-out times."
+msgstr "<strong>Asistencias</strong>: horas de entrada y de salida."
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
-"<strong>Customers and suppliers</strong>: contacts marked as customer or\n"
-"                        supplier."
-msgstr "<strong>Clientes y proveedores</strong>: los contactos marcados como cliente o proveedor."
+"<strong>Companies</strong> (the ones selected below) and <strong>the key\n"
+"                        itself</strong> (its expiry date, to remind you to "
+"renew it): only read."
+msgstr "<strong>Empresas</strong> (las que elijas abajo) y <strong>la propia clave</strong> (su fecha de caducidad, para recordarte que la renueves): solo las lee."
+"<strong>Empresas</strong> (las que elijas abajo) y <strong>la propia clave</"
+"strong> (su fecha de caducidad, para recordarte que la renueves): solo las "
+"lee."
+
+#. module: taskteam_connector
+#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
+msgid "<strong>Contacts</strong>: customers and suppliers."
+msgstr "<strong>Contactos</strong>: clientes y proveedores."
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
 "<strong>Draft sale orders</strong> (only if\n"
-"                        you allow it): TaskTeam creates sale orders in draft with the signed\n"
-"                        delivery note PDF attached, for your office to review and invoice. It\n"
-"                        never confirms, changes or deletes anything."
-msgstr "<strong>Pedidos de venta en borrador</strong> (solo si lo permites): TaskTeam crea pedidos de venta en borrador con el PDF del albarán firmado adjunto, para que tu oficina los revise y los facture. Nunca confirma, cambia ni borra nada."
+"                        you allow it): TaskTeam creates them with the signed "
+"delivery note PDF\n"
+"                        attached, for your office to review and invoice. It "
+"never confirms them."
+msgstr "<strong>Pedidos de venta en borrador</strong> (solo si lo permites): TaskTeam los crea con el PDF del albarán firmado adjunto, para que tu oficina los revise y los facture. Nunca los confirma."
+"<strong>Pedidos de venta en borrador</strong> (solo si lo permites): "
+"TaskTeam los crea con el PDF del albarán firmado adjunto, para que tu "
+"oficina los revise y los facture. Nunca los confirma."
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
-"<strong>Employees</strong>: name, company, job position, work phone and\n"
-"                        mobile, work email and, when the TaskTeam user may read it in Odoo,\n"
-"                        the identification number."
-msgstr "<strong>Empleados</strong>: nombre, empresa, puesto de trabajo, teléfono y móvil del trabajo, correo del trabajo y, cuando el usuario de TaskTeam puede verlo en Odoo, el número de identificación."
+"<strong>Employees and job positions</strong>: name, company, job position,\n"
+"                        work phone and mobile, work email. The "
+"identification number is only\n"
+"                        read, to recognise each person."
+msgstr "<strong>Empleados y puestos de trabajo</strong>: nombre, empresa, puesto, teléfono y móvil del trabajo y correo del trabajo. El número de identificación solo se lee, para reconocer a cada persona."
+"<strong>Empleados y puestos de trabajo</strong>: nombre, empresa, puesto, "
+"teléfono y móvil del trabajo y correo del trabajo. El número de "
+"identificación solo se lee, para reconocer a cada persona."
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
 "<strong>TaskTeam is an external service</strong> (a task and chat app for\n"
-"                    field teams) run by Task Team Tech, S.L. It needs a TaskTeam account.\n"
-"                    This assistant creates, in this database, a dedicated internal user\n"
-"                    <code>taskteam</code> with minimal rights and an API key for it. TaskTeam\n"
-"                    then uses Odoo's external API with that user's rights only:"
-msgstr "<strong>TaskTeam es un servicio externo</strong> (una app de tareas y chat para equipos que trabajan fuera de la oficina) de Task Team Tech, S.L. Necesitas una cuenta de TaskTeam. Este asistente crea, en esta base de datos, un usuario interno propio, <code>taskteam</code>, con los permisos mínimos y una clave de API para él. Después TaskTeam usa la API externa de Odoo solo con los permisos de ese usuario:"
-
-#. module: taskteam_connector
-#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
-msgid ""
-"<strong>The key itself</strong>: its expiry date, to remind you to renew it."
-msgstr "<strong>La propia clave</strong>: su fecha de caducidad, para recordarte que la renueves."
+"                    teams) run by Task Team Tech, S.L. It needs a TaskTeam "
+"account.\n"
+"                    This assistant creates, in this database, a dedicated "
+"internal user\n"
+"                    <code>taskteam</code> and an API key for it. With that "
+"user's rights only,\n"
+"                    TaskTeam <strong>reads and writes</strong> the data your "
+"office chooses to\n"
+"                    sync, so Odoo and TaskTeam stay the same:"
+msgstr "<strong>TaskTeam es un servicio externo</strong> (una app de tareas y chat para equipos) de Task Team Tech, S.L. Necesitas una cuenta de TaskTeam. Este asistente crea, en esta base de datos, un usuario interno propio, <code>taskteam</code>, y una clave de API para él. Solo con los permisos de ese usuario, TaskTeam <strong>lee y escribe</strong> los datos que tu oficina elija sincronizar, para que Odoo y TaskTeam estén siempre iguales:"
+"<strong>TaskTeam es un servicio externo</strong> (una app de tareas y chat "
+"para equipos) de Task Team Tech, S.L. Necesitas una cuenta de TaskTeam. Este "
+"asistente crea, en esta base de datos, un usuario interno propio, "
+"<code>taskteam</code>, y una clave de API para él. Solo con los permisos de "
+"ese usuario, TaskTeam <strong>lee y escribe</strong> los datos que tu "
+"oficina elija sincronizar, para que Odoo y TaskTeam estén siempre iguales:"
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_key_view_form
 msgid ""
 "<strong>This key is shown only once.</strong> Odoo keeps only a fingerprint\n"
-"                    of it, so it cannot be displayed again. If you lose it, open\n"
+"                    of it, so it cannot be displayed again. If you lose it, "
+"open\n"
 "                    Settings › TaskTeam and create a new key."
-msgstr "<strong>Esta clave solo se muestra una vez.</strong> Odoo guarda solo una huella de ella, así que no se puede volver a ver. Si la pierdes, abre Ajustes › TaskTeam y crea una clave nueva."
+msgstr ""
+"<strong>Esta clave solo se muestra una vez.</strong> Odoo guarda solo una "
+"huella de ella, así que no se puede volver a ver. Si la pierdes, abre "
+"Ajustes › TaskTeam y crea una clave nueva."
+
+#. module: taskteam_connector
+#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
+msgid ""
+"<strong>Time off</strong>: requests,\n"
+"                        their approval or refusal, and time off types."
+msgstr "<strong>Ausencias</strong>: las solicitudes, su aprobación o rechazo, y los tipos de ausencia."
+"<strong>Ausencias</strong>: las solicitudes, su aprobación o rechazo, y los "
+"tipos de ausencia."
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_key__key
@@ -85,6 +122,21 @@ msgstr "Clave de API"
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__allow_sale_orders
 msgid "Allow TaskTeam to create draft sale orders"
 msgstr "Permitir que TaskTeam cree pedidos de venta en borrador"
+
+#. module: taskteam_connector
+#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
+msgid ""
+"An app was installed after TaskTeam was connected. Click\n"
+"                    <em>Update permissions</em> so TaskTeam can sync it too. "
+"The key does not change."
+msgstr "Se ha instalado una app después de conectar TaskTeam. Pulsa <em>Actualizar permisos</em> para que TaskTeam también la sincronice. La clave no cambia."
+"Se ha instalado una app después de conectar TaskTeam. Pulsa <em>Actualizar "
+"permisos</em> para que TaskTeam también la sincronice. La clave no cambia."
+
+#. module: taskteam_connector
+#: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__attendance_available
+msgid "Attendance Available"
+msgstr "Asistencias disponible"
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
@@ -102,6 +154,13 @@ msgstr "Empresas"
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid "Connect TaskTeam"
 msgstr "Conectar TaskTeam"
+
+#. module: taskteam_connector
+#: model:ir.module.module,summary:base.module_taskteam_connector
+msgid ""
+"Connect TaskTeam to Odoo: a dedicated user and API key so both stay in sync "
+"(people, contacts, time off, attendance, draft sale orders)"
+msgstr "Conecta TaskTeam con Odoo: un usuario y una clave de API propios para que los dos estén siempre iguales (personas, contactos, ausencias, asistencias y pedidos de venta en borrador)"
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__connected
@@ -137,8 +196,10 @@ msgstr "Desconectar"
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
 "Disconnect TaskTeam? All keys of the TaskTeam user will be revoked and the "
-"user will be archived. TaskTeam will stop reading data from this Odoo."
-msgstr "¿Desconectar TaskTeam? Se revocarán todas las claves del usuario de TaskTeam y el usuario se archivará. TaskTeam dejará de leer datos de este Odoo."
+"user will be archived. TaskTeam will stop syncing with this Odoo."
+msgstr "¿Desconectar TaskTeam? Se revocarán todas las claves del usuario de TaskTeam y el usuario se archivará. TaskTeam dejará de sincronizarse con este Odoo."
+"¿Desconectar TaskTeam? Se revocarán todas las claves del usuario de TaskTeam "
+"y el usuario se archivará. TaskTeam dejará de sincronizarse con este Odoo."
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_key__display_name
@@ -164,9 +225,11 @@ msgstr "Acepto"
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
-"I understand that TaskTeam is an external service and I allow it the access "
-"listed above"
-msgstr "Entiendo que TaskTeam es un servicio externo y le doy el acceso de la lista de arriba"
+"I understand that TaskTeam is an external service and I allow it to read and "
+"write the data listed above"
+msgstr "Entiendo que TaskTeam es un servicio externo y le permito leer y escribir los datos de la lista de arriba"
+"Entiendo que TaskTeam es un servicio externo y le permito leer y escribir "
+"los datos de la lista de arriba"
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_key__id
@@ -221,16 +284,26 @@ msgstr "Solo los administradores pueden desconectar TaskTeam."
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_key_view_form
 msgid ""
 "Paste this key and your Odoo address (shown) in\n"
-"                    <strong>TaskTeam › Perfil › Conexiones › Odoo</strong>."
-msgstr "Pega esta clave y la dirección de tu Odoo (la tienes aquí) en <strong>TaskTeam › Perfil › Conexiones › Odoo</strong>."
+"                    <strong>TaskTeam › Settings › Connections › Odoo</"
+"strong>."
+msgstr "Pega esta clave y la dirección de tu Odoo (la tienes aquí) en <strong>TaskTeam › Configuración › Conexiones › Odoo</strong>."
+"Pega esta clave y la dirección de tu Odoo (la tienes aquí) en "
+"<strong>TaskTeam › Configuración › Conexiones › Odoo</strong>."
 
 #. module: taskteam_connector
 #. odoo-python
 #: code:addons/taskteam_connector/wizard/taskteam_connect_wizard.py:0
 msgid ""
 "Please tick the consent box first: TaskTeam is an external service and will "
-"read the data listed on this screen."
-msgstr "Primero marca la casilla de consentimiento: TaskTeam es un servicio externo y leerá los datos de la lista de esta pantalla."
+"read and write the data listed on this screen."
+msgstr "Primero marca la casilla de consentimiento: TaskTeam es un servicio externo y leerá y escribirá los datos de la lista de esta pantalla."
+"Primero marca la casilla de consentimiento: TaskTeam es un servicio externo "
+"y leerá y escribirá los datos de la lista de esta pantalla."
+
+#. module: taskteam_connector
+#: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__rights_missing
+msgid "Rights Missing"
+msgstr "Faltan permisos"
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__sales_available
@@ -249,39 +322,71 @@ msgid "TaskTeam"
 msgstr "TaskTeam"
 
 #. module: taskteam_connector
+#: model:ir.module.module,shortdesc:base.module_taskteam_connector
+msgid "TaskTeam Connector"
+msgstr "Conector de TaskTeam"
+
+#. module: taskteam_connector
 #: model:ir.model.fields,help:taskteam_connector.field_taskteam_connect_wizard__allow_sale_orders
 msgid ""
 "TaskTeam creates sale orders in draft with the signed delivery note PDF "
 "attached. It never confirms, changes or deletes anything. Untick it and "
 "create a new key to take this permission away."
-msgstr "TaskTeam crea pedidos de venta en borrador con el PDF del albarán firmado adjunto. Nunca confirma, cambia ni borra nada. Para quitarle este permiso, desmarca la casilla y crea una clave nueva."
+msgstr ""
+"TaskTeam crea pedidos de venta en borrador con el PDF del albarán firmado "
+"adjunto. Nunca confirma, cambia ni borra nada. Para quitarle este permiso, "
+"desmarca la casilla y crea una clave nueva."
 
 #. module: taskteam_connector
 #: model:ir.model.fields,help:taskteam_connector.field_taskteam_connect_wizard__consent
 msgid ""
-"TaskTeam is an external service. Tick this box to allow it to read the data "
-"listed above with the key created here."
-msgstr "TaskTeam es un servicio externo. Marca esta casilla para permitirle leer los datos de la lista de arriba con la clave que se crea aquí."
+"TaskTeam is an external service. Tick this box to allow it to read and write "
+"the data listed above with the key created here."
+msgstr "TaskTeam es un servicio externo. Marca esta casilla para permitirle leer y escribir los datos de la lista de arriba con la clave que se crea aquí."
+"TaskTeam es un servicio externo. Marca esta casilla para permitirle leer y "
+"escribir los datos de la lista de arriba con la clave que se crea aquí."
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
 msgid ""
 "TaskTeam is connected through the user <strong>TaskTeam</strong>\n"
-"                    (login <code>taskteam</code>). You can create a new key (existing keys\n"
-"                    keep working until you revoke them) or disconnect TaskTeam."
-msgstr "TaskTeam está conectado con el usuario <strong>TaskTeam</strong> (usuario <code>taskteam</code>). Puedes crear una clave nueva (las que ya existen siguen funcionando hasta que las revoques) o desconectar TaskTeam."
+"                    (login <code>taskteam</code>). You can create a new key "
+"(existing keys\n"
+"                    keep working until you revoke them) or disconnect "
+"TaskTeam."
+msgstr ""
+"TaskTeam está conectado con el usuario <strong>TaskTeam</strong> (usuario "
+"<code>taskteam</code>). Puedes crear una clave nueva (las que ya existen "
+"siguen funcionando hasta que las revoques) o desconectar TaskTeam."
 
 #. module: taskteam_connector
 #. odoo-python
 #: code:addons/taskteam_connector/wizard/taskteam_connect_wizard.py:0
 msgid ""
 "TaskTeam is disconnected: its keys are revoked and its user is archived."
-msgstr "TaskTeam está desconectado: sus claves están revocadas y su usuario, archivado."
+msgstr ""
+"TaskTeam está desconectado: sus claves están revocadas y su usuario, "
+"archivado."
 
 #. module: taskteam_connector
 #: model:ir.model,name:taskteam_connector.model_taskteam_connect_key
 msgid "TaskTeam key (shown once)"
 msgstr "Clave de TaskTeam (se muestra una vez)"
+
+#. module: taskteam_connector
+#: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
+msgid ""
+"TaskTeam never deletes anything in Odoo: what is removed in TaskTeam is\n"
+"                    archived or cancelled here. This module sends nothing "
+"anywhere by itself.\n"
+"                    TaskTeam only gets access when you paste the key into "
+"TaskTeam, and loses it\n"
+"                    when you click <em>Disconnect</em> or revoke the key."
+msgstr "TaskTeam nunca borra nada en Odoo: lo que se quita en TaskTeam aquí se archiva o se cancela. Este módulo no envía nada a ningún sitio por sí solo. TaskTeam solo tiene acceso cuando pegas la clave en TaskTeam, y lo pierde cuando pulsas <em>Desconectar</em> o revocas la clave."
+"TaskTeam nunca borra nada en Odoo: lo que se quita en TaskTeam aquí se "
+"archiva o se cancela. Este módulo no envía nada a ningún sitio por sí solo. "
+"TaskTeam solo tiene acceso cuando pegas la clave en TaskTeam, y lo pierde "
+"cuando pulsas <em>Desconectar</em> o revocas la clave."
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__taskteam_user_id
@@ -290,16 +395,26 @@ msgstr "Usuario de TaskTeam"
 
 #. module: taskteam_connector
 #: model:ir.model.fields,help:taskteam_connector.field_taskteam_connect_wizard__company_ids
-msgid "TaskTeam will only read data from these companies."
-msgstr "TaskTeam solo leerá datos de estas empresas."
+msgid "TaskTeam will only sync data of these companies."
+msgstr "TaskTeam solo sincronizará datos de estas empresas."
+
+#. module: taskteam_connector
+#. odoo-python
+#: code:addons/taskteam_connector/wizard/taskteam_connect_wizard.py:0
+msgid ""
+"The TaskTeam user has its permissions up to date. The key does not change."
+msgstr "El usuario de TaskTeam ya tiene sus permisos al día. La clave no cambia."
+"El usuario de TaskTeam ya tiene sus permisos al día. La clave no cambia."
+
+#. module: taskteam_connector
+#: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_wizard__time_off_available
+msgid "Time Off Available"
+msgstr "Ausencias disponible"
 
 #. module: taskteam_connector
 #: model_terms:ir.ui.view,arch_db:taskteam_connector.taskteam_connect_wizard_view_form
-msgid ""
-"This module sends nothing anywhere by itself. TaskTeam only gets access\n"
-"                    when you paste the key into TaskTeam, and loses it when you click\n"
-"                    <em>Disconnect</em> or revoke the key."
-msgstr "Este módulo no envía nada a ningún sitio por su cuenta. TaskTeam solo tiene acceso cuando pegas la clave en TaskTeam, y lo pierde cuando pulsas <em>Desconectar</em> o revocas la clave."
+msgid "Update permissions"
+msgstr "Actualizar permisos"
 
 #. module: taskteam_connector
 #: model:ir.model.fields,field_description:taskteam_connector.field_taskteam_connect_key__expiration_date

@@ -1,14 +1,15 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
-"""One-screen assistant that prepares read access for TaskTeam.
+"""One-screen assistant that prepares access for TaskTeam.
 
 This module has no business logic and never contacts any external server.
 It only creates, inside this database, what an administrator would otherwise
 create by hand: a group allowing 1-year API keys, a dedicated internal user
-with minimal rights, and an API key for that user. The key is shown once and
-is never stored in clear text (Odoo stores only its hash).
+with the rights two-way sync needs, and an API key for that user. The key is
+shown once and is never stored in clear text (Odoo stores only its hash).
 """
 
 import datetime
+from urllib.parse import urlsplit
 
 from odoo import Command, _, api, fields, models
 from odoo.addons.base.models.res_users import check_identity
@@ -17,6 +18,10 @@ from odoo.tools import SQL
 
 TASKTEAM_LOGIN = 'taskteam'
 TASKTEAM_USER_NAME = 'TaskTeam'
+# Odoo posts a message in the chatter when time off is approved or refused,
+# and refuses to do it (Odoo 17) when the author has no email address. The
+# TaskTeam user gets taskteam@<the company's email domain> if it has none.
+TASKTEAM_EMAIL_LOCAL_PART = 'taskteam'
 TASKTEAM_GROUP_NAME = 'TaskTeam API'
 # Odoo caps the lifetime of API keys of non-admin users with the highest
 # ``api_key_duration`` among their groups.
@@ -28,6 +33,18 @@ KEY_SCOPE = 'rpc'
 # (and attach the signed delivery note to them) without seeing or changing
 # anybody else's orders. Only offered when the Sales app is installed.
 SALES_GROUP_XMLID = 'sales_team.group_sale_salesman'
+# Rights for two-way sync: TaskTeam reads and writes what the office syncs.
+# Each group is given only when its app is installed: (app, group).
+SYNC_GROUPS = (
+    # Contacts › Creation: create and edit customers and suppliers.
+    ('base', 'base.group_partner_manager'),
+    # Time Off › Administrator: approve, refuse and validate (also the second
+    # approval) anybody's time off, and create or archive time off types.
+    # «Officer» can only read time off types.
+    ('hr_holidays', 'hr_holidays.group_hr_holidays_manager'),
+    # Attendances › Officer: Manage all attendances (create and edit them).
+    ('hr_attendance', 'hr_attendance.group_hr_attendance_user'),
+)
 
 
 class TaskteamConnectWizard(models.TransientModel):
@@ -37,14 +54,14 @@ class TaskteamConnectWizard(models.TransientModel):
     consent = fields.Boolean(
         string='I agree',
         help='TaskTeam is an external service. Tick this box to allow it to '
-             'read the data listed above with the key created here.',
+             'read and write the data listed above with the key created here.',
     )
     company_ids = fields.Many2many(
         'res.company',
         string='Companies',
         default=lambda self: self.env.user.company_ids,
         domain=lambda self: [('id', 'in', self.env.user.company_ids.ids)],
-        help='TaskTeam will only read data from these companies.',
+        help='TaskTeam will only sync data of these companies.',
     )
     odoo_url = fields.Char(string='Odoo address', compute='_compute_odoo_url')
     taskteam_user_id = fields.Many2one(
@@ -53,6 +70,9 @@ class TaskteamConnectWizard(models.TransientModel):
     api_key_ids = fields.Many2many(
         'res.users.apikeys', string='Existing keys', compute='_compute_connection')
     sales_available = fields.Boolean(compute='_compute_sales_available')
+    time_off_available = fields.Boolean(compute='_compute_apps_available')
+    attendance_available = fields.Boolean(compute='_compute_apps_available')
+    rights_missing = fields.Boolean(compute='_compute_connection')
     allow_sale_orders = fields.Boolean(
         string='Allow TaskTeam to create draft sale orders',
         default=lambda self: self._default_allow_sale_orders(),
@@ -70,6 +90,12 @@ class TaskteamConnectWizard(models.TransientModel):
         for wizard in self:
             wizard.sales_available = available
 
+    def _compute_apps_available(self):
+        installed = self._installed_apps()
+        for wizard in self:
+            wizard.time_off_available = 'hr_holidays' in installed
+            wizard.attendance_available = 'hr_attendance' in installed
+
     @api.model
     def _default_allow_sale_orders(self):
         group = self._sales_group()
@@ -83,6 +109,9 @@ class TaskteamConnectWizard(models.TransientModel):
             wizard.taskteam_user_id = user if user.active else False
             wizard.connected = bool(user.active)
             wizard.api_key_ids = keys
+            # An app installed after connecting (Time Off, Attendances…).
+            wizard.rights_missing = bool(user.active and (
+                not user.email or self._required_groups() - user.sudo().group_ids))
 
     # ------------------------------------------------------------------
     # Lookups
@@ -107,6 +136,37 @@ class TaskteamConnectWizard(models.TransientModel):
         if not installed:
             return self.env['res.groups']
         return self.env.ref(SALES_GROUP_XMLID, raise_if_not_found=False) or self.env['res.groups']
+
+    @api.model
+    def _installed_apps(self):
+        """Names of the apps in ``SYNC_GROUPS`` that are installed.
+
+        «to upgrade» counts as installed: a module upgrade (and its migration
+        script) runs while the other apps are in that state.
+        """
+        return set(self.env['ir.module.module'].sudo().search([
+            ('name', 'in', [app for app, _xmlid in SYNC_GROUPS]),
+            ('state', 'in', ('installed', 'to upgrade')),
+        ]).mapped('name'))
+
+    @api.model
+    def _required_groups(self):
+        """Every group the TaskTeam user needs, except the optional Sales one
+        and the «TaskTeam API» group."""
+        installed = self._installed_apps()
+        groups = self.env.ref('base.group_user') | self.env.ref('hr.group_hr_user')
+        for app, xmlid in SYNC_GROUPS:
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group and app in installed:
+                groups |= group
+        return groups
+
+    @api.model
+    def _taskteam_email(self):
+        """taskteam@ the email domain of the company (or of this Odoo's address)."""
+        domain = self.env.company.sudo().alias_domain_id.name
+        domain = domain or urlsplit(self.get_base_url()).hostname or 'localhost'
+        return '%s@%s' % (TASKTEAM_EMAIL_LOCAL_PART, domain)
 
     @api.model
     def _find_api_keys(self, user):
@@ -135,15 +195,12 @@ class TaskteamConnectWizard(models.TransientModel):
         self.ensure_one()
         companies = self.company_ids
         main_company = self.env.company if self.env.company in companies else companies[:1]
-        required_groups = (
-            self.env.ref('base.group_user')
-            | self.env.ref('hr.group_hr_user')
-            | group
-        )
+        required_groups = self._required_groups() | group
         user = self._find_taskteam_user()
         if user:
             user.write({
                 'active': True,
+                'email': user.email or self._taskteam_email(),
                 'company_ids': [Command.set(companies.ids)],
                 'company_id': main_company.id,
                 'group_ids': [Command.link(g.id) for g in required_groups],
@@ -152,11 +209,32 @@ class TaskteamConnectWizard(models.TransientModel):
         return self.env['res.users'].sudo().with_context(no_reset_password=True).create({
             'name': TASKTEAM_USER_NAME,
             'login': TASKTEAM_LOGIN,
+            'email': self._taskteam_email(),
             'company_ids': [Command.set(companies.ids)],
             'company_id': main_company.id,
             # Set explicitly so the default groups of new users are not added.
             'group_ids': [Command.set(required_groups.ids)],
         })
+
+    @api.model
+    def _update_taskteam_user_rights(self):
+        """Give an existing, active TaskTeam user the groups it is missing.
+
+        Used when the module is upgraded (see ``migrations/``) and by the
+        «Update permissions» button after installing Time Off or Attendances.
+        It only adds groups (and an email address if the user has none); an
+        archived (disconnected) user is left alone.
+        """
+        user = self._find_taskteam_user()
+        if not user.active:
+            return False
+        missing = self._required_groups() - user.group_ids
+        if missing:
+            user.write({'group_ids': [Command.link(g.id) for g in missing]})
+        if not user.email:
+            user.email = self._taskteam_email()
+            missing = True
+        return bool(missing)
 
     def _apply_sales_permission(self, user):
         """Give or take away the right to create draft sale orders."""
@@ -191,7 +269,7 @@ class TaskteamConnectWizard(models.TransientModel):
         if not self.consent:
             raise UserError(_(
                 'Please tick the consent box first: TaskTeam is an external '
-                'service and will read the data listed on this screen.'))
+                'service and will read and write the data listed on this screen.'))
         if not self.company_ids:
             raise UserError(_('Select at least one company.'))
 
@@ -228,6 +306,22 @@ class TaskteamConnectWizard(models.TransientModel):
     @check_identity
     def action_connect_confirmed(self):
         return self._connect()
+
+    def action_update_rights(self):
+        """Give the TaskTeam user the rights of apps installed after connecting."""
+        self.ensure_one()
+        self._check_can_connect()
+        self._update_taskteam_user_rights()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'type': 'success',
+                'message': _('The TaskTeam user has its permissions up to date. '
+                             'The key does not change.'),
+                'next': {'type': 'ir.actions.act_window_close'},
+            },
+        }
 
     def action_disconnect(self):
         """Revoke every API key of the TaskTeam user and archive the user."""
