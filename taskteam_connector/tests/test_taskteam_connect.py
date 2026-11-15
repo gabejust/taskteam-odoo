@@ -1,10 +1,12 @@
 # Part of TaskTeam Connector. See LICENSE file for full copyright and licensing details.
 import base64
 import datetime
+import importlib.util
 
 from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
+from odoo.tools.misc import file_path
 
 from odoo.addons.taskteam_connector.wizard.taskteam_connect_wizard import (
     KEY_DURATION_DAYS,
@@ -260,3 +262,161 @@ class TestTaskteamSaleOrders(TransactionCase):
                 'name': 'other.pdf', 'res_model': 'sale.order', 'res_id': admin_order.id,
                 'datas': base64.b64encode(b'%PDF-1.4 example'),
             })
+
+
+@tagged('post_install', '-at_install')
+class TestTaskteamSyncRights(TransactionCase):
+    """Two-way sync: TaskTeam writes contacts, time off and attendances.
+
+    Each right is given only when its app is installed, so these tests run on
+    databases with and without Time Off and Attendances.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.admin = cls.env.ref('base.user_admin')
+        cls.Wizard = cls.env(user=cls.admin)['taskteam.connect.wizard']
+        installed = cls.env['ir.module.module'].search(
+            [('state', '=', 'installed')]).mapped('name')
+        cls.time_off = 'hr_holidays' in installed
+        cls.attendance = 'hr_attendance' in installed
+        cls.worker = cls.env['hr.employee'].create({'name': 'Sync Worker'})
+
+    def _connect(self):
+        self.Wizard.create({'consent': True})._connect()
+        return self.env['res.users'].search([('login', '=', TASKTEAM_LOGIN)])
+
+    def _sync_group_xmlids(self):
+        xmlids = ['base.group_partner_manager']
+        if self.time_off:
+            xmlids.append('hr_holidays.group_hr_holidays_manager')
+        if self.attendance:
+            xmlids.append('hr_attendance.group_hr_attendance_manager')
+        return xmlids
+
+    def test_groups_follow_installed_apps(self):
+        user = self._connect()
+        for xmlid in self._sync_group_xmlids():
+            self.assertIn(self.env.ref(xmlid), user.groups_id, xmlid)
+        self.assertFalse(self.Wizard.create({}).rights_missing)
+        # Still not an administrator of Odoo or of Employees.
+        self.assertFalse(user.has_group('base.group_system'))
+        self.assertFalse(user.has_group('base.group_erp_manager'))
+        self.assertFalse(user.has_group('hr.group_hr_manager'))
+
+    def test_can_create_and_edit_contacts(self):
+        as_taskteam = self.env(user=self._connect())
+        partner = as_taskteam['res.partner'].create({'name': 'Synced Customer', 'is_company': True})
+        partner.write({'phone': '+34 600 000 000'})
+        partner.write({'active': False})
+        self.assertFalse(partner.active)
+
+    def test_can_decide_time_off_and_create_types(self):
+        if not self.time_off:
+            self.skipTest('Time Off is not installed')
+        as_taskteam = self.env(user=self._connect())
+        Leave = as_taskteam['hr.leave']
+        LeaveType = as_taskteam['hr.leave.type']
+        leave_type = LeaveType.create({
+            'name': 'Synced type', 'requires_allocation': 'no', 'leave_validation_type': 'hr'})
+        double = LeaveType.create({
+            'name': 'Synced double', 'requires_allocation': 'no',
+            'leave_validation_type': 'both'})
+        leave_type.write({'active': False})
+        leave_type.write({'active': True})
+
+        def leave(day, holiday_type):
+            return Leave.create({
+                'employee_id': self.worker.id,
+                'holiday_status_id': holiday_type.id,
+                'request_date_from': day,
+                'request_date_to': day,
+            })
+
+        approved = leave('2030-03-04', leave_type)
+        approved.action_approve()
+        self.assertEqual(approved.state, 'validate')
+        refused = leave('2030-03-05', leave_type)
+        refused.action_refuse()
+        self.assertEqual(refused.state, 'refuse')
+        twice = leave('2030-03-06', double)
+        twice.action_approve()
+        if twice.state == 'validate1':
+            twice.action_validate()
+        self.assertEqual(twice.state, 'validate')
+
+    def test_can_write_attendances_of_others(self):
+        if not self.attendance:
+            self.skipTest('Attendances is not installed')
+        as_taskteam = self.env(user=self._connect())
+        attendance = as_taskteam['hr.attendance'].create({
+            'employee_id': self.worker.id,
+            'check_in': '2030-03-04 08:00:00',
+            'check_out': '2030-03-04 12:00:00',
+        })
+        attendance.write({'check_out': '2030-03-04 13:00:00'})
+        self.assertEqual(attendance.employee_id, self.worker)
+
+    def test_upgrade_gives_missing_rights_to_existing_user(self):
+        """What the 1.1.0 migration and the «Update permissions» button do."""
+        user = self._connect()
+        sync_groups = self.env['res.groups']
+        for xmlid in self._sync_group_xmlids():
+            sync_groups |= self.env.ref(xmlid)
+        # A user created by version 1.0.0 had none of them.
+        user.write({'groups_id': [Command.unlink(g.id) for g in sync_groups]})
+        self.assertTrue(self.Wizard.create({}).rights_missing)
+        self.assertTrue(self.Wizard._update_taskteam_user_rights())
+        for group in sync_groups:
+            self.assertIn(group, user.groups_id)
+        self.assertFalse(self.Wizard.create({}).rights_missing)
+        self.assertFalse(self.Wizard._update_taskteam_user_rights())
+
+    def test_update_rights_button_keeps_the_key(self):
+        _action = self.Wizard.create({'consent': True})._connect()
+        user = self.env['res.users'].search([('login', '=', TASKTEAM_LOGIN)])
+        partner_manager = self.env.ref('base.group_partner_manager')
+        user.write({'groups_id': [Command.unlink(partner_manager.id)]})
+        keys = self.env['res.users.apikeys'].search([('user_id', '=', user.id)])
+        with self.assertRaisesRegex(UserError, 'consent'):
+            self.Wizard.create({}).action_update_rights()
+        self.Wizard.create({'consent': True}).action_update_rights()
+        self.assertIn(partner_manager, user.groups_id)
+        self.assertEqual(self.env['res.users.apikeys'].search([('user_id', '=', user.id)]), keys)
+
+    def test_user_has_an_email_address(self):
+        """Odoo 17 refuses to approve time off when the author has no email."""
+        self.env.company.alias_domain_id = self.env['mail.alias.domain'].create(
+            {'name': 'example.com'})
+        user = self._connect()
+        self.assertEqual(user.email, 'taskteam@example.com')
+        user.email = 'office@example.com'
+        self._connect()
+        self.assertEqual(user.email, 'office@example.com')
+        # A user created by version 1.0.0 had none.
+        user.email = False
+        self.assertTrue(self.Wizard.create({}).rights_missing)
+        self.assertTrue(self.Wizard._update_taskteam_user_rights())
+        self.assertEqual(user.email, 'taskteam@example.com')
+
+    def test_upgrade_leaves_disconnected_user_alone(self):
+        user = self._connect()
+        self.Wizard.create({}).action_disconnect()
+        partner_manager = self.env.ref('base.group_partner_manager')
+        user.write({'groups_id': [Command.unlink(partner_manager.id)]})
+        self.assertFalse(self.Wizard._update_taskteam_user_rights())
+        self.assertNotIn(partner_manager, user.groups_id)
+        self.assertFalse(user.active)
+
+    def test_migration_script(self):
+        user = self._connect()
+        partner_manager = self.env.ref('base.group_partner_manager')
+        user.write({'groups_id': [Command.unlink(partner_manager.id)]})
+        path = file_path('taskteam_connector/migrations/18.0.1.1.0/post-migrate.py')
+        spec = importlib.util.spec_from_file_location('taskteam_post_migrate', path)
+        script = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(script)
+        script.migrate(self.env.cr, '18.0.1.0.0')
+        self.env.invalidate_all()
+        self.assertIn(partner_manager, user.groups_id)
