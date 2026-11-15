@@ -2,9 +2,10 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2 class="mt-4 mb-2">TaskTeam Connector</h2>
-            <p class="lead">Give TaskTeam access to your employees, companies and contacts
-                and, if you allow it, let it create draft sale orders from signed delivery
-                notes. One click, with a dedicated user and an API key that you control.</p>
+            <p class="lead">Keep Odoo and TaskTeam in sync both ways: people, job positions,
+                contacts, time off and attendances and, if you allow it, draft sale orders from
+                signed delivery notes. One click, with a dedicated user and an API key that you
+                control.</p>
         </div>
     </div>
 </section>
@@ -14,10 +15,12 @@
         <div class="col-md-12">
             <div class="alert alert-info" role="alert">
                 <strong>TaskTeam is an external service.</strong> TaskTeam is a task and chat
-                app for field teams, run by Task Team Tech, S.L. You need a TaskTeam account
+                app for teams, run by Task Team Tech, S.L. You need a TaskTeam account
                 to use this module. The module only prepares access inside your Odoo:
                 <strong>it does not send any data anywhere by itself</strong>. TaskTeam can use
-                your Odoo only after you paste the key into TaskTeam.
+                your Odoo only after you paste the key into TaskTeam, and only after an
+                administrator has ticked a consent box allowing TaskTeam to read and write the
+                data listed below.
             </div>
         </div>
     </div>
@@ -31,9 +34,11 @@
                 and clicks <em>Connect TaskTeam</em>. The module then creates:</p>
             <ul>
                 <li>an internal user <strong>TaskTeam</strong> (login <code>taskteam</code>,
-                    no password, no invitation email) with minimal rights: Internal User and
-                    Employees › Officer, limited to the companies you select and, only if you
-                    tick it and Sales is installed, Sales › User: Own Documents Only;</li>
+                    no password, no invitation email), limited to the companies you select, with
+                    the rights two-way sync needs: Employees › Officer, Contacts › Contact
+                    Creation and, when those apps are installed, Time Off › Administrator and
+                    Attendances › Administrator (and Sales › User: Own Documents Only, only if
+                    you tick it);</li>
                 <li>an API key for that user, shown only once. <strong>On Odoo 17 API keys
                     do not expire</strong>: the key stays valid until you revoke it.</li>
             </ul>
@@ -42,20 +47,24 @@
         </div>
         <div class="col-md-6">
             <h3>What TaskTeam does</h3>
-            <p>Through Odoo's external API, with that user's rights only, TaskTeam reads:</p>
+            <p>Through Odoo's external API, with that user's rights only, TaskTeam
+                <strong>reads and writes</strong> the data your office chooses to sync, so each
+                person keeps working in the program they know and both stay the same:</p>
             <ul>
-                <li><strong>Employees</strong>: name, company, job position, work phone and
-                    mobile, work email and, when the TaskTeam user may read it in Odoo, the
-                    identification number;</li>
-                <li><strong>Companies</strong>: the companies you select;</li>
-                <li><strong>Customers and suppliers</strong>: contacts marked as customer or
-                    supplier;</li>
+                <li><strong>Employees and job positions</strong>: name, company, job position,
+                    work phone and mobile, work email. The identification number is only read,
+                    to recognise each person;</li>
+                <li><strong>Contacts</strong>: customers and suppliers;</li>
+                <li><strong>Time off</strong>: requests, their approval or refusal, and time off
+                    types;</li>
+                <li><strong>Attendances</strong>: check-in and check-out times;</li>
+                <li><strong>Draft sale orders</strong> (only if you allow it): with the signed
+                    delivery note PDF attached, for your office to review and invoice. TaskTeam
+                    never confirms them;</li>
+                <li><strong>Companies</strong>: only read.</li>
             </ul>
-            <p><strong>Draft sale orders</strong> (only if you allow it, and only when the
-                Sales app is installed): TaskTeam creates sale orders in draft with the signed
-                delivery note PDF attached, for your office to review and invoice. It never
-                confirms, changes or deletes anything. Untick the option and create a new key to
-                take this permission away.</p>
+            <p>TaskTeam never deletes anything in Odoo: what is removed in TaskTeam is archived
+                or cancelled here.</p>
             <p>You stay the owner of your data. You can revoke access at any time from
                 <em>Settings › TaskTeam › Disconnect</em> or from the user's API keys.</p>
         </div>
@@ -70,10 +79,10 @@
                 <li>Install the module (it depends only on <em>base</em> and
                     <em>Employees</em>).</li>
                 <li>Go to <em>Settings › TaskTeam</em>.</li>
-                <li>Select the companies TaskTeam may read, tick the consent box and click
+                <li>Select the companies TaskTeam may sync, tick the consent box and click
                     <em>Connect TaskTeam</em>. Odoo may ask for your password.</li>
                 <li>Copy the key and your Odoo address and paste them in
-                    <em>TaskTeam › Perfil › Conexiones › Odoo</em>.</li>
+                    <em>TaskTeam › Settings › Connections › Odoo</em>.</li>
                 <li>To replace the key, open <em>Settings › TaskTeam</em> again, click
                     <em>Create a new key</em> and revoke the old one from the TaskTeam user's
                     API keys.</li>
